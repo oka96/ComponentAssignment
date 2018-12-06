@@ -1,11 +1,11 @@
 package codabook.virtualstore.base;
 
-public class Delivery {
+public class DeliveryType {
 	String name;
 	double fees;
 	int deliveryDay;
-	public Delivery() {}
-	
+	String description;
+		
 	public String getName() {
 		return name;
 	}
@@ -18,10 +18,15 @@ public class Delivery {
 		return deliveryDay;
 	}
 
-	public Delivery(String name,double fees,int deliveryDay) {
+	public String getDescription() {
+		return description;
+	}
+	
+	public DeliveryType(String name,double fees,int deliveryDay, String description) {
 		this.name = name;
 		this.fees = fees;
 		this.deliveryDay = deliveryDay;
+		this.description = description;
 	}
 	
 }

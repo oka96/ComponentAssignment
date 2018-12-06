@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Scanner;
 
 import codabook.componentmodel.ComponentRegistry;
+import codabook.virtualstore.base.LogisticService;
+import codabook.virtualstore.base.DeliveryType;
 import codabook.virtualstore.base.InventoryService;
 import codabook.virtualstore.base.Product;
 import codabook.virtualstore.base.ShoppingCartService;
@@ -48,6 +50,13 @@ public class UI {
 		}
 	}
 
+//	public void displayDeliveryTypes() {
+//		List<DeliveryType> deliveryTypes = store.getDeliveryTypes();
+//		System.out.println("\n------------------");
+//		System.out.println(" AVAILABLE PRODUCTS");
+//
+//	}
+	
 	public Product selectItemToBuy() {
 
 		List<Product> products = store.getAvailableProducts();
@@ -140,7 +149,7 @@ public class UI {
 		return products;
 
 	}
-
+	
 	public Product selectItemToRemove() {
 
 		Product[] products = displayShoppingCart();
@@ -175,18 +184,52 @@ public class UI {
 		}
 	}
 
+	public DeliveryType selectDeliveryType() {
+
+		List<DeliveryType> deliveryTypes = store.getDeliveryTypes();
+
+		System.out.println("\n---------");
+		System.out.println(" DELIVERY TYPE LIST");
+		System.out.println("---------\n");
+		System.out.println("-----------------------------------------------------------");
+		System.out.println("No.\tNAME\t\t\t\tPRICE\tDAY\tREMARK");
+		System.out
+				.println("-----------------------------------------------------------\n");
+
+		int deliveryIndex = 0;
+
+		for (DeliveryType deliveryType : deliveryTypes) {
+			deliveryIndex++;
+
+			System.out.printf("%2d.\t%-30s\t$%3.2f\t%2d\t%s\n", deliveryIndex,
+					deliveryType.getName(), deliveryType.getFees(),
+					deliveryType.getDeliveryDay(),deliveryType.getDescription());
+		}
+
+		System.out.println("\nPlease select delivery type no. :");
+
+		int selectedIndex = scanner.nextInt();
+
+		if (selectedIndex > 0 && selectedIndex <= deliveryTypes.size()) {
+			DeliveryType selectedDeliveryType = deliveryTypes.get(selectedIndex - 1);
+			return selectedDeliveryType;
+		}
+		System.out.println("ERROR - Invalid delivery type selection");
+		return null;
+	}
+	
 	public void removalSuccess(Product product, int quantity) {
 		System.out.println("SUCCESS - " + quantity + " quantities of "
 				+ product.getName() + " removed from shopping cart!");
 		displayShoppingCart();
 	}
 
-	public void displayCheckOut() {
-		double totalPrice = store.getShoppingCartPrice();
-		System.out.printf("Please Pay $%1$,-8.2f\n", totalPrice);
+	public void displayCheckOut(DeliveryType dt) {
+		double totalPrice = store.getShoppingCartPrice()+dt.getFees();
+		System.out.printf("Please Pay $%-8.2f(include $%.2f delivery fees)\n", totalPrice,dt.getFees());
 		System.out.println("Thank you for your patronage! Please visit again!");
 	}
-
+	
 	public int mainMenu() {
 		System.out.println("\n-------------------");
 		System.out.println(" WELCOME TO eSTORE!");
@@ -195,7 +238,7 @@ public class UI {
 		System.out.println("1. View Inventory");
 		System.out.println("2. Add item to shopping cart");
 		System.out.println("3. Remove item from shopping cart");
-		System.out.println("4. Check Out");
+		System.out.println("4. Check Out (with delivery service)");
 		System.out.println("5. Exit");
 
 		System.out.println("\nChoose an option:");
@@ -209,7 +252,9 @@ public class UI {
 				.fetchComponent(InventoryService.class);
 		ShoppingCartService shoppingCart = (ShoppingCartService) ComponentRegistry
 				.fetchComponent(ShoppingCartService.class);
-		Store store = new Store(ui, inventory, shoppingCart);
+		LogisticService logistic = (LogisticService) ComponentRegistry
+				.fetchComponent(LogisticService.class);
+		Store store = new Store(ui, inventory, shoppingCart, logistic);
 		ui.setStore(store);
 
 		int userChoice = ui.mainMenu();
@@ -241,8 +286,10 @@ public class UI {
 				break;
 
 			case 4:
-				ui.displayCheckOut();
-				System.out.println("Select the delivery service");
+				DeliveryType deliveryType = ui.selectDeliveryType();
+				if(deliveryType==null)
+					return;
+				ui.displayCheckOut(deliveryType);
 				store.checkOut();
 
 			default:
