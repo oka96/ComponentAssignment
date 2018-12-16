@@ -112,6 +112,11 @@ public class UI {
 
 	public Product[] displayShoppingCart() {
 		Map<Product, Integer> shoppedProducts = store.getShoppedProducts();
+		if(shoppedProducts.isEmpty()) {
+			System.out.println("No Item In Your Shopping Cart!");
+			return null;
+		}
+		
 		System.out.println("\n---------------------------------");
 		System.out.println(" DISPLAYING ITEMS IN SHOPPING CART");
 		System.out.println("-----------------------------------\n");
@@ -153,6 +158,9 @@ public class UI {
 	public Product selectItemToRemove() {
 
 		Product[] products = displayShoppingCart();
+		if(products==null) {
+			return null;
+		}
 		System.out.println("\nPlease select item no. to remove:");
 
 		int selectedIndex = scanner.nextInt();
@@ -279,16 +287,21 @@ public class UI {
 			case 3:
 				Product product = ui.selectItemToRemove();
 				if (product == null)
-					return;
+					break;
 				int quantity = ui.selectQuantityToRemove(product);
 				store.removeItemsFromCart(product, quantity);
 				ui.displayShoppingCart();
 				break;
 
 			case 4:
+				Map<Product, Integer> shoppedProducts = store.getShoppedProducts();
+				if(shoppedProducts.isEmpty()) {
+					System.out.println("No Item In Your Shopping Cart. Please add some item(s) before select delivery service.");
+					break;
+				}
 				DeliveryType deliveryType = ui.selectDeliveryType();
 				if(deliveryType==null)
-					return;
+					break;
 				ui.displayCheckOut(deliveryType);
 				store.checkOut();
 
